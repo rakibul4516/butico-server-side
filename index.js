@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const app = express();
 require('dotenv').config()
@@ -17,48 +17,78 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await client.connect();
 
-    //Create database
-    const productDatabase = client.db("productDB").collection("products");
-    const brandsDatabase = client.db("productDB").collection("brands");
+        //Create database
+        const productDatabase = client.db("productDB").collection("products");
+        const brandsDatabase = client.db("productDB").collection("brands");
+        const cartsDatabase = client.db("productDB").collection("carts");
 
-    //CRUD Operations 
+        //CRUD Operations 
 
-    // Post method
-    app.post('/products',async(req,res)=>{
-        const product = req.body;
-        const result = await productDatabase.insertOne(product);
-        res.send(result)
-    })
+        // Post method
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await productDatabase.insertOne(product);
+            res.send(result)
+        })
+        app.post('/carts', async (req, res) => {
+            const cart = req.body;
+            const result = await cartsDatabase.insertOne(cart);
+            res.send(result)
+        })
 
-    //get method
-    app.get('/brands',async(req,res)=>{
-        const cursor = brandsDatabase.find();
-        const result = await cursor.toArray();
-        res.send(result)
+        //get method
+        app.get('/products', async (req, res) => {
+            const cursor = productDatabase.find();
+            const result = await cursor.toArray();
+            res.send(result)
 
-    })
+        })
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await productDatabase.findOne(query);;
+            res.send(result)
+        })
+        app.get('/brands', async (req, res) => {
+            const cursor = brandsDatabase.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+        app.get('/brands/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await brandsDatabase.findOne(query);;
+            res.send(result)
+        })
 
 
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+        //Delete method
+
+
+        //Put method
+
+
+
+        // Send a ping to confirm a successful connection
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } finally {
+        // Ensures that the client will close when you finish/error
+        // await client.close();
+    }
 }
 run().catch(console.dir);
 
@@ -67,10 +97,10 @@ run().catch(console.dir);
 
 
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send('Butico Server is running')
 })
 
-app.listen(port,()=>{
+app.listen(port, () => {
     console.log(`Butico server is running into port no: ${port}`)
 })
