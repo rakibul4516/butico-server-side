@@ -97,7 +97,25 @@ async function run() {
             res.send(result)
         })
         //Put method
-
+        app.put('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedProducts = req.body;
+            const products = {
+                $set: {
+                    productName:updatedProducts.productName,
+                    type:updatedProducts.type,
+                    price:updatedProducts.price,
+                    rating:updatedProducts.rating,
+                    desc:updatedProducts.desc,
+                    photo:updatedProducts.photo,
+            
+                }
+            };
+            const result = await productDatabase.updateOne(filter, products, options)
+            res.send(result)
+        })
 
 
         // Send a ping to confirm a successful connection
